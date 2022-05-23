@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- 为了方便只有这一个文件，自己注意分出css、html、js文件-->
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>getImage</title>
+    <!-- 引入自己的jquery -->
+
+    <script src="../statics/js/jquery-3.6.0.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        
+        #showXpredict {
+            width: 60%;
+            height: auto;
+            margin: 0 auto;
+        }
+        
+        #drop {
+            width: 100%;
+            height: 300px;
+            border: 2px #009dff solid;
+            display: table;
+            border-radius: 10px;
+            background-color: rgb(208, 240, 248);
+        }
+        
+        #resshow {
+            height: 300px;
+            width: 100%;
+            display: flex;
+            margin-top: 2px;
+            border: 2px #009dff solid;
+        }
+        
+        #upload {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: center;
+        }
+        
+        #uploadimg {
+            width: 80px;
+            height: 80px;
+        }
+        
+        #tips {
+            font-size: 25px;
+            color: #333333;
+        }
+        
+        #imgshow {
+            height: 300px;
+            width: auto;
+            margin: 0 auto;
+            display: inline-block;
+        }
+        
+        #imgshow img {
+            height: 100%;
+            width: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="showXpredict">
+        <div id="drop">
+            <div id="upload">
+                <img src="" alt="" id="uploadimg">
+                <p id="tips">请将图片拖拽至此</p>
+            </div>
+        </div>
+        <div id="resshow">
+            <div id="imgshow">
+            </div>
+
+        </div>
+
+    </div>
+</body>
+<script>
+    $.ajaxSetup({
+        data: {
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        }
+    });
+    // var drag = document.getElementById("drag");
+    var drop = document.getElementById("drop");
+    /* 
+        元素拖拽
+        拖拽开始 dragstart
+        拖拽过程 drag
+        拖拽结束 dragend
+    */
+    // 拖拽开始
+    // 写法一
+    // drag.ondragstart = function() {}
+
+    /*
+    // 写法二
+    drag.addEventListener("dragstart", divdragstart);
+    function divdragstart(e) {
+
+    }
+    */
+    // 拖拽过程
+    // drag.ondrag = function() {}
+
+    // 拖拽结束
+    // drag.ondragend = function() {}
+
+    /* 
+        目标元素事件
+        进入元素        dragenter
+        在元素上移动    dragover
+        离开元素        dragleave
+        在元素上释放    drop
+    */
+    // 进入元素
+    // drop.ondragenter = function(e) {e.preventDefault();file_in();}
+
+    // 在元素上移动
+    // drop.ondragover = function(e) {e.preventDefault();file_in();}
+
+    // 离开元素
+    // drop.ondragleave = function() {file_out();}
+
+    // 在元素上释放
+    // drop.ondrop = function() {file_out();}
+
+    drop.addEventListener("dragenter", drag);
+    drop.addEventListener("dragover", drag);
+    drop.addEventListener("dragleave", drag);
+    drop.addEventListener("drop", drag);
+
+    function drag(e) {
+        // 禁用浏览器默认事件
+        e.preventDefault();
+        switch (e.type) {
+            case "dragenter":
+                file_in();
+                break;
+            case "dragover":
+                file_in();
+                break;
+            case "dragleave":
+                // 做判断 防止鼠标进入被拖入元素的子元素(个人用于提示)时触发dragleave事件，导致子元素闪烁
+                if (e.relatedTarget.tagName == "BODY") {
+                    file_out();
+                }
+                break;
+            case "drop":
+                file_out();
+                // 获取拖拽过来的文件
+                var ifile = e.dataTransfer.files;
+                // 只取第一个文件 获得文件类型 : “文件类型/文件格式”
+                FileType = ifile[0].type.split("/")[0];
+                // 判断是否为图片
+                if (FileType == "image") {
+                    var imageFile = new FileReader();
+                    imageFile.readAsDataURL(ifile[0]);
+                    imageFile.onload = function() {
+                        image = imageFile.result;
+                        // 做一个覆盖
+                        if ($("#imgshow").children("img")) {
+                            $("#imgshow").children("img").remove();
+                        }
+                        $("#imgshow").append('<img src="' + image + '" alt="">');
+                        $.ajax({
+                            url: '',
+                            type: 'post',
+                            data: {
+                                'image': image
+                            },
+                            success: function(res) {
+                                // console.log(res);
+                            }
+                        })
+                    }
+                }
+                break;
+        }
+    }
+
+    function file_out() {
+        $('#uploadimg').attr("src", "替换为自己的图片src");
+        $('#tips').css("color", "#333333");
+        $('#tips').html("请将图片拖拽至此")
+    }
+
+    function file_in() {
+        $('#uploadimg').attr("src", "替换为自己的图片src");
+        $('#tips').html("请释放鼠标");
+        $('#tips').css("color", "#4a90e2");
+    }
+</script>
+
+</html>
